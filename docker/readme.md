@@ -1,52 +1,50 @@
 # YaSo Docker 部署指南
 
-本指南说明如何使用 Docker 部署 YaSo 应用程序。部署包含三个容器：
-1.  **前端 (Frontend)**: Nginx 服务，用于托管 React 静态文件并代理 API 请求。
-2.  **后端 (Backend)**: Node.js Express 服务器。
-3.  **数据库 (Database)**: MySQL。
-
-## 前置条件
-
--   已安装 Docker
--   已安装 Docker Compose
-
-## 快速开始
-
-1.  进入项目根目录。
-2.  运行以下命令构建并启动服务：
-
-    ```bash
-    docker-compose up -d --build
-    ```
-
-3.  访问 `http://localhost` 使用应用。
+本指南说明如何使用 Docker 部署 YaSo 应用程序。由于您选择使用云服务器本地的 MySQL，部署仅包含前端和后端容器。
 
 ## 架构说明
 
--   **前端 (端口 80)**:
-    -   使用 `docker/frontend.Dockerfile` 构建。
-    -   采用多阶段构建 (Node 构建 -> Nginx 服务)。
-    -   Nginx 通过 `docker/nginx.conf` 进行配置。
-    -   将 `/api` 和 `/uploads` 请求代理到后端服务。
+-   **前端 (端口 80)**: Nginx 服务，托管 React 静态文件并代理 API 请求。
+-   **后端**: Node.js Express 服务器，连接到宿主机的 MySQL 数据库。
+-   **数据库**: 使用宿主机本地运行的 MySQL。
 
--   **后端 (内部端口 3001)**:
-    -   使用 `docker/backend.Dockerfile` 构建。
-    -   使用 `docker-compose.yml` 中定义的环境变量连接 `db` 服务。
-    -   将上传的文件持久化存储到 `./server/uploads` (映射到宿主机)。
+## 前置条件
 
--   **数据库 (内部端口 3306)**:
-    -   使用官方 `mysql:8.0` 镜像。
-    -   将数据持久化存储到命名卷 `db_data`。
+1.  **MySQL 数据库**: 确保您的服务器上已安装并运行 MySQL。
+2.  **数据库配置**:
+    -   创建一个名为 `yaso` 的数据库。
+    -   确保数据库用户（默认为 `root`）有权限从 Docker 容器访问（建议允许 `root` 从任意主机 `%` 或特定网段访问，或者创建一个专用用户）。
+    -   导入初始 Schema（如果有）：位于 `server/schema.sql`。
 
-## 配置说明
+## 快速开始
 
--   **环境变量**: 数据库凭证和名称在 `docker-compose.yml` 中定义。
--   **API 基础 URL**: 前端配置为在生产环境中使用相对路径 (`/api`) (通过 `VITE_API_BASE_URL=""`)，允许 Nginx 处理路由。
+1.  **配置数据库连接**:
+    打开 `docker-compose.yml`，修改 backend 服务的环境变量以匹配您的本地 MySQL 配置：
+    ```yaml
+    environment:
+      - DB_HOST=host.docker.internal # 指向宿主机
+      - DB_USER=root                 # 修改为您的数据库用户名
+      - DB_PASSWORD=root1234         # 修改为您的数据库密码
+      - DB_NAME=yaso
+    ```
 
-## 故障排查
-
--   **数据库连接**: 如果后端最初无法连接到数据库，可能是因为数据库正在初始化。Docker Compose 会处理启动顺序，但如果需要，应用程序逻辑应重试连接。
--   **重建**: 如果修改了代码，需要重建镜像：
+2.  **启动服务**:
+    在项目根目录下运行：
     ```bash
     docker-compose up -d --build
     ```
+
+3.  **访问应用**:
+    浏览器访问 `http://localhost` 或服务器 IP。
+
+## 注意事项
+
+-   **host.docker.internal**: 我们在 `docker-compose.yml` 中配置了 `extra_hosts`，使得容器可以通过 `host.docker.internal` 访问宿主机网络。
+-   **防火墙/权限**: 如果后端无法连接数据库，请检查 MySQL 用户权限是否允许远程连接，以及服务器防火墙是否开放了 3306 端口（虽然 Docker 容器访问宿主机通常走内部网桥，但 MySQL 权限验证视来源 IP 而定）。
+
+## 故障排查
+
+-   **数据库连接失败**:
+    -   检查 MySQL 是否运行。
+    -   检查 `docker-compose.yml` 中的密码是否正确。
+    -   尝试进入后端容器 ping 宿主机：`docker-compose exec backend ping host.docker.internal`。

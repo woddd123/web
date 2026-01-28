@@ -15,32 +15,18 @@ services:
       context: .
       dockerfile: docker/backend.Dockerfile
     environment:
-      - DB_HOST=db
+      # Use host.docker.internal to access host's localhost
+      - DB_HOST=host.docker.internal
+      # Ensure these match your local MySQL configuration
       - DB_USER=root
       - DB_PASSWORD=root1234
       - DB_NAME=yaso
-    depends_on:
-      - db
     volumes:
       - ./server/uploads:/app/server/uploads
     networks:
       - yaso-network
-
-  db:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root1234
-      MYSQL_DATABASE: yaso
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - yaso-network
-    # Expose port only if you need to access DB from host
-    ports:
-      - "3306:3306"
-
-volumes:
-  db_data:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   yaso-network:
