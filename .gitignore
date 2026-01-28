@@ -28,3 +28,4 @@ dist-ssr
 server/uploads/*
 !server/uploads/.gitkeep
 db_data/
+public/models/lama_fp32.onnx
