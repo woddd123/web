@@ -9,6 +9,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Download model (using curl inside the container)
+RUN apk add --no-cache curl bash && chmod +x download_models.sh && ./download_models.sh
+
 # Build for production with empty base URL (relative paths)
 ENV VITE_API_BASE_URL=""
 RUN npm run build
