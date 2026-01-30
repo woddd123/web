@@ -19,7 +19,7 @@ services:
       - DB_HOST=host.docker.internal
       # Ensure these match your local MySQL configuration
       - DB_USER=root
-      - DB_PASSWORD=root123456
+      - DB_PASSWORD=wod123
       - DB_NAME=yaso
     volumes:
       - ./server/uploads:/app/server/uploads
