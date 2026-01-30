@@ -94,7 +94,7 @@ async function initDB() {
     }
   } catch (err) {
     console.error('Database connection failed:', err.message);
-    console.error('Please ensure MySQL is running and database "yaso_history" exists.');
+    console.error('Please ensure MySQL is running and database "yaso" exists.');
   }
 }
 

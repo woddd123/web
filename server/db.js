@@ -5,7 +5,7 @@ const connection = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'root1234', // Default password, user might need to change
-  database: process.env.DB_NAME || 'yaso_history',
+  database: process.env.DB_NAME || 'yaso',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
