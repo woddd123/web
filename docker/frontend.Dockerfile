@@ -25,7 +25,7 @@ ENV VITE_API_BASE_URL=""
 RUN npm run build
 
 # Stage 2: Serve
-FROM docker.xuanyuan.run/library/node:latest
+FROM docker.xuanyuan.run/library/nginx:latest
 
 # Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
